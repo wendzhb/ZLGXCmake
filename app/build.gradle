@@ -1,0 +1,51 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+    defaultConfig {
+        applicationId "com.example.kaifa.zlgxcmake"
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+//  生成so的方式二
+    sourceSets {
+        main {
+            jni.srcDirs = []//设置禁止gradle生成Android.mk
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    task ndkBuild(type: Exec) {//设置新的so的生成目录
+        commandLine "C:\\Users\\kaifa\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\ndk-build.cmd",//NDK 的安装路径
+                "NDK_PROJECT_PATH = build/intermediates/ndk",
+                "NDK_LIBS_OUT=libs",
+                "APP_BUILD_SCRIPT=jni/Android.mk",
+                "NDK_APPLICATION_MK=jni/Application.mk"
+    }
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn ndkBuild
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    testCompile 'junit:junit:4.12'
+}
